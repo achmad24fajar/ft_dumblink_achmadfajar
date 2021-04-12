@@ -7,8 +7,6 @@ exports.postAllSosmedsByLink = async (req, res) => {
 	try{
 		const { title, description, image, dataLinks } = JSON.parse(req.body.link)
 
-		console.log(dataLinks)
-
 		// Generate unique link
 		const uniqueLink = randomstring.generate(7);
 
@@ -17,14 +15,15 @@ exports.postAllSosmedsByLink = async (req, res) => {
 			description: description,
 			image: req.files.image[0].filename,
 			uniqueLink: uniqueLink,
-			viewCount: 0
+			viewCount: 0,
+			userId: req.userId.id
 		})
 
 		await dataLinks.forEach((data, index) => {
 			const sosmed = Sosmed.create({
 				title: data.titleLink,
 				url: data.urlLink,
-				image: req.files.image[0].filename,
+				imageLink: req.files.imageLink[index].filename,
 				linkId: postLink.dataValues.id
 			})
 		})
@@ -49,6 +48,7 @@ exports.postAllSosmedsByLink = async (req, res) => {
 
 		res.send({
 			status: "Success",
+			message: "Link was successfully save",
 			data:{
 				link: {
 					...link.dataValues,
@@ -65,6 +65,70 @@ exports.postAllSosmedsByLink = async (req, res) => {
 	}
 }
 
+exports.updateLink = async (req, res) => {
+	try{
+		const {id} = req.params
+		const { title, description, image, dataLinks } = JSON.parse(req.body.link)
+
+		console.log(req.files)
+		
+		let dataImage
+		if(typeof image === 'object' && image !== null){
+			dataImage = req.files.image[0].filename
+		} else {
+			dataImage = image
+		}
+
+		const update = await Link.update({
+			title: title,
+			description: description,
+			image: dataImage,
+		},{
+			where:{
+				id
+			}
+		})
+
+		await dataLinks.forEach((data, index) => {
+			let dataImageLink
+			if(typeof imageLink === 'object' && imageLink !== null){
+				dataImageLink = req.files.imageLink[0].filename
+			} else {
+				dataImageLink = data.imageLink
+			}
+			const findSosmed = Sosmed.findOne({
+				where: {
+					id: data.id
+				}
+			})
+
+			if(findSosmed){
+				const sosmed = Sosmed.update({
+					title: data.titleLink,
+					url: data.urlLink,
+					imageLink: dataImageLink,
+				},{
+					where: {
+						id: data.id
+					}
+				})
+			}
+		})
+
+		res.send({
+			status: "Success",
+			message: "Data was successfully updated"
+		})
+
+	} catch (err) {
+		console.log(err);
+		res.status(500).send({
+			status: "error",
+			message: "Server Error",
+		});
+	}
+} 
+
 exports.getAllByLink = async (req, res) => {
 	try{
 		const { uniqueLink } = req.params
@@ -77,6 +141,8 @@ exports.getAllByLink = async (req, res) => {
 				exclude: ['createdAt', 'updatedAt']
 			}
 		})
+
+		console.log(link)
 
 		const links = await Sosmed.findAll({
 			where: {
@@ -108,6 +174,9 @@ exports.getAllByLink = async (req, res) => {
 exports.getAllLink = async (req, res) => {
 	try{
 		const linksFormDB = await Link.findAll({
+			where: {
+				userId: req.userId.id
+			},
 			include: [{
 				model: Sosmed,
 				attributes:{
@@ -174,6 +243,70 @@ exports.deleteLink = async (req, res) => {
 				}
 			})
 		}
+		res.send({
+			status: "Success",
+			message: "Data was successfully deleted"
+		})
+
+	} catch (err) {
+		console.log(err);
+		res.status(500).send({
+			status: "error",
+			message: "Server Error",
+		});
+	}
+}
+
+exports.getLink = async (req, res) => {
+	try{
+		const { id } = req.params
+
+		const linkFromDB = await Link.findOne({
+			where:{
+				id,
+			}
+		})
+
+		const links = await Sosmed.findAll({
+			where: {
+				linkId: linkFromDB.dataValues.id
+			}
+		})
+
+		const link = {
+			...linkFromDB.dataValues,
+			links
+		}
+
+		res.send({
+			status: "Success",
+			data: {
+				link
+			}
+		})
+	} catch (err) {
+		console.log(err);
+		res.status(500).send({
+			status: "error",
+			message: "Server Error",
+		});
+	}
+}
+
+exports.deleteLinks = async (req, res) => {
+	try{
+		const { id } = req.params
+
+		await Sosmed.destroy({
+			where: {
+				id: id
+			}
+		})
+
+		res.send({
+			status: "Success",
+			message: "Data was successfully deleted"
+		})
 
 	} catch (err) {
 		console.log(err);

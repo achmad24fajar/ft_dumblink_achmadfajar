@@ -13,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       Link.hasMany(models.Sosmed, {
         foreignKey: 'linkId'
       });
+      Link.belongsTo(models.User, {foreignKey: 'userId'});
     }
   };
   Link.init({
@@ -21,6 +22,7 @@ module.exports = (sequelize, DataTypes) => {
     image: DataTypes.STRING,
     uniqueLink: DataTypes.STRING,
     viewCount: DataTypes.INTEGER,
+    userId: DataTypes.INTEGER,
   }, {
     sequelize,
     modelName: 'Link',

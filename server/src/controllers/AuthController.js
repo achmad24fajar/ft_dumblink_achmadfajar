@@ -8,9 +8,9 @@ exports.registerUser = async (req, res) => {
     const { email, password, fullname } = req.body;
 
     const schema = Joi.object({
+      fullname: Joi.string().required(),
       email: Joi.string().email().min(10).max(50).required(),
       password: Joi.string().min(8).required(),
-      fullname: Joi.string().required(),
     });
 
     const { error } = schema.validate(req.body);
@@ -161,6 +161,7 @@ exports.editUser = async (req, res) => {
 
     res.send({
       status: "Success",
+      message: "Data was Succesfully updated",
       data:{
         user,
       }

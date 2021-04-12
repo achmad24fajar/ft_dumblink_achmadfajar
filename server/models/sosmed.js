@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
   Sosmed.init({
     title: DataTypes.STRING,
     url: DataTypes.STRING,
-    image: DataTypes.STRING,
+    imageLink: DataTypes.STRING,
     linkId: DataTypes.INTEGER
   }, {
     sequelize,
