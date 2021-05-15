@@ -23,6 +23,9 @@ module.exports = {
       viewCount: {
         type: Sequelize.INTEGER
       },
+      theme: {
+        type: Sequelize.STRING
+      },
       userId: {
         allowNull: false,
         type: Sequelize.INTEGER,

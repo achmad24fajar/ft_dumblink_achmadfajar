@@ -5,7 +5,7 @@ const randomstring = require("randomstring");
 
 exports.postAllSosmedsByLink = async (req, res) => {
 	try{
-		const { title, description, image, dataLinks } = JSON.parse(req.body.link)
+		const { title, description, image, theme, dataLinks } = JSON.parse(req.body.link)
 
 		// Generate unique link
 		const uniqueLink = randomstring.generate(7);
@@ -16,13 +16,14 @@ exports.postAllSosmedsByLink = async (req, res) => {
 			image: req.files.image[0].filename,
 			uniqueLink: uniqueLink,
 			viewCount: 0,
+			theme: theme,
 			userId: req.userId.id
 		})
 
 		await dataLinks.forEach((data, index) => {
 			const sosmed = Sosmed.create({
-				title: data.titleLink,
-				url: data.urlLink,
+				titleLink: data.titleLink,
+				urlLink: data.urlLink,
 				imageLink: req.files.imageLink[index].filename,
 				linkId: postLink.dataValues.id
 			})
@@ -73,7 +74,7 @@ exports.updateLink = async (req, res) => {
 		console.log(req.files)
 		
 		let dataImage
-		if(typeof image === 'object' && image !== null){
+		if(typeof image === 'object'){
 			dataImage = req.files.image[0].filename
 		} else {
 			dataImage = image
@@ -91,7 +92,7 @@ exports.updateLink = async (req, res) => {
 
 		await dataLinks.forEach((data, index) => {
 			let dataImageLink
-			if(typeof imageLink === 'object' && imageLink !== null){
+			if(typeof data.imageLink == 'object'){
 				dataImageLink = req.files.imageLink[0].filename
 			} else {
 				dataImageLink = data.imageLink
@@ -104,8 +105,8 @@ exports.updateLink = async (req, res) => {
 
 			if(findSosmed){
 				const sosmed = Sosmed.update({
-					title: data.titleLink,
-					url: data.urlLink,
+					titleLink: data.titleLink,
+					urlLink: data.urlLink,
 					imageLink: dataImageLink,
 				},{
 					where: {
@@ -141,8 +142,6 @@ exports.getAllByLink = async (req, res) => {
 				exclude: ['createdAt', 'updatedAt']
 			}
 		})
-
-		console.log(link)
 
 		const links = await Sosmed.findAll({
 			where: {
@@ -198,6 +197,7 @@ exports.getAllLink = async (req, res) => {
     			description: link.description,
     			uniqueLink: link.uniqueLink,
     			viewCount: link.viewCount,
+    			theme: link.theme,
     			image: link.image,
     			links: {
     				...link.Sosmeds
